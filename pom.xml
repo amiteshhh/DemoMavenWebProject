@@ -1,0 +1,117 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.demo.java</groupId>
+  <artifactId>DemoMavenWebProject</artifactId>
+  <packaging>war</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <name>DemoMavenWebProject Maven Webapp</name>
+  <url>http://maven.apache.org</url>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <finalName>DemoMavenWebProject</finalName>
+  </build>
+
+  	<profiles>
+		<profile>
+			<activation><activeByDefault>false</activeByDefault></activation>
+			<id>fullBuild</id>
+			<build>
+				<finalName>DemoMavenWebProject</finalName>
+				<plugins>
+					<plugin>
+						<groupId>com.github.eirslett</groupId>
+						<artifactId>frontend-maven-plugin</artifactId>
+						<version>1.4</version>
+						<configuration>
+							<workingDirectory>client</workingDirectory>
+						</configuration>
+
+						<executions>
+
+							<execution>
+								<!-- installing node and npm locally is must for this plugin so that build is unaffected from the system in which it is running
+                If you want to use the node environment of system use exec-maven-plugin -->
+								<id>install node and npm</id>
+								<goals>
+									<goal>install-node-and-npm</goal>
+								</goals>
+								<!-- optional: default phase is "generate-resources" -->
+								<phase>generate-resources</phase>
+								<configuration>
+									<nodeVersion>v6.2.1</nodeVersion>
+									<npmVersion>3.9.3</npmVersion>
+								</configuration>
+							</execution>
+                <!--Use npm install to install plugins required for your client node project
+                 It is same as manual 'npm install' in the client directory
+                -->
+							<execution>
+								<id>npm install</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<!-- Optional configuration which provides for running any npm command -->
+								<configuration>
+									<arguments>install</arguments>
+								</configuration>
+							</execution>
+
+							<!--<execution>
+								<id>bower install</id>
+								<goals>
+									<goal>bower</goal>
+								</goals>-->
+								<!-- Optional configuration which provides for running any npm command -->
+								<!--<configuration>
+									<arguments>install</arguments>
+								</configuration>-->
+							<!--</execution>-->
+
+							<execution>
+								<id>grunt build</id>
+								<goals>
+									<goal>grunt</goal>
+								</goals>
+								<configuration>
+									<arguments>mvn-build</arguments>
+								</configuration>
+							</execution>
+
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<version>3.0.0</version>
+						<!--<configuration>
+							<webResources>
+								<resource>
+									<directory>src</directory>
+									<targetPath>WEB-INF</targetPath>
+								</resource>
+							</webResources>
+						</configuration>-->
+					</plugin>
+					<plugin>
+				        <artifactId>maven-compiler-plugin</artifactId>
+				        <version>3.6.1</version>
+				        <!--<configuration>
+				          <source>1.8</source>
+				          <target>1.8</target>
+				        </configuration>-->
+				      </plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>
