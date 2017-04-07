@@ -1,26 +1,28 @@
 # Sample maven project
 
-This project demonstrate how you can integrate the [node](https://nodejs.org/) based build system into [maven](https://maven.apache.org/).
+This project demonstrate how you can integrate the [node](https://nodejs.org/) based build system into [maven](https://maven.apache.org/) using maven plugin [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin).
 
 ## Use Case
 
-Front end developer prefers the `node` based ecosystem which comes with many handy tools like [npm](), [Grunt](http://gruntjs.com/), [Gulp](http://gulpjs.com/) and many more to manage application development, code validation, test automation, optimization, deployment etc.
+Front end developer prefers the _node_ based ecosystem which comes with many handy tools like [npm](https://www.npmjs.com/), [Grunt](http://gruntjs.com/), [Gulp](http://gulpjs.com/) and many more to manage application development, code validation, test automation, optimization, deployment etc.
 
-However If you want to integrate it into Java Project, say, to deploy it as a WAR, you must put the entire front-end codebase into appropriate directory of Java project (normally under `WebContent` or `Webapp` folder). Unfortunately Java build system doesn't have inbuilt support to invoke `node` commands and therefore you will not only lose the various optimization, validations that you were able to do in `node` ecosystem but also it will look ugly and unmanagable to put everything inside `WebContent` directory.
+However If you want to integrate it into Java Project to deploy it as a [WAR](https://en.wikipedia.org/wiki/WAR_(file_format)) , you must put the entire front-end code-base into appropriate directory of Java project (normally under `WebContent` or `webapp` folder). Unfortunately Java build system doesn't have inbuilt support to invoke _node_ commands and therefore you will not only lose the various optimization, validations that you were able to do in _node_ ecosystem but also it will look ugly and unmanageable to put everything inside `webapp` directory.
 
->Manually copying the the optimized/compiled/validated front end code to appropriate directory of Java project each time you do the Java buildis also time consuming and painful.
+>Manually copying the the optimized/compiled/validated front-end code to appropriate directory of Java project is time consuming and painful.
 
 ## Solution
 
-Fortunately there are many maven plugins available which can run the `node` command. One such plugin is [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin).
+Fortunately there are many maven plugins available which can run the _node_ command. One such plugin is [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin).
 
 This plugin downloads/installs Node and NPM locally for your project, runs npm install, and then any combination of Bower, Grunt, Gulp, Jspm, Karma, or Webpack.
 
-All we need to do is additionally write appropriate grunt/gulp task to copy the fron-end code to appropriate Java direcory( normally `WebContent` folder)
+All we need to do is additionally write appropriate grunt/gulp task to copy the front-end code to appropriate Java directory( `webapp` folder in maven based project)
 
 ## Example
 
-### Step 1 : Dynamic Java Website Project Creation Using Maven
+This sample project is built using maven and Grunt for client task automation.
+
+### __Step 1:__ Dynamic Java Website Project Creation Using Maven
 > Skip if you have already done.
 
 I will be using `maven` command to create a Maven Project. You can also use `eclipse` to create Maven project. 
@@ -30,285 +32,91 @@ Run command in the directory under which you want to keep your project
 `mvn archetype:generate -DgroupId=com.demo.java -DartifactId=DemoMavenWebProject -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false`
 
 This will create a project with folder named `DemoMavenWebProject`
+Refer Maven directory structure for detail
 
 ```
 ├── DemoMavenWebProject/
-│   └── src/
-│   └── pom.xml
+│   └── src/
+│       └── main/
+│           └── webapp/
+│   └── pom.xml
 
 ```
 
-### Step 2 : Copy 
+### __Step 2:__ Create the front-end node project 
 
-**grunt-maven-plugin** plugin allows you to integrate **Grunt** tasks into the **Maven** build process. [**Grunt**](http://gruntjs.com/) is the JavaScript task runner utility. **grunt-maven-plugin** works on both Windows and \*nix systems.
+Preferebly create a folder named `client` under root folder `DemoMavenWebProject` and put all your client code inside this. 
 
-**grunt-maven-plugin** comes with unique Maven+Grunt Integrated Workflow which removes all impediments present when trying to build project using two different build tools.
+### __Step 3:__ Create Grunt task to  be run during maven build
 
-*Version 1.5.0 requires grunt-maven NPM plugin 1.2.0 version for Integrated Workflow to work.*
+Grunt task has been created to concatanate, minify and uglify the source code into `dest` directory along-with copying static assets.
 
-## Prerequisites
+During maven build we will do all this and copy the `dest` directory content into `webapp` directory using `copy:mvn` task.
 
-**maven**
-
-## Motivation
-
-**grunt-maven-plugin** came to life because I needed a good tool to integrate Maven and Grunt. By good i mean not just firing off a **grunt** process, but a tool that would respect rules from both backend (Maven) and frontend (Grunt) worlds. No *node_modules* in Maven sources, no Maven *src/main/webapp/..* paths in *Gruntfile.js*.
-
-**grunt-maven-plugin** allows you to create a usual NPM/Grunt project that could be built and understood by any Node developer, and put it somewhere inside Maven project. It can be extracted at any time and nothing should break. On the other side backend developers don't need to worry about pesky *node_modules* wandering around src/ - all dependencies, generated sources and deliverables live in dedicated **target-grunt** directory, doing this part of build the Maven way.
-
-
-## Usage
-
-Add **grunt-maven-plugin** to application build process in your *pom.xml*:
-
-```xml
-
-<gruntOptions>
-  <gruntOption>--verbose</gruntOption>
-</gruntOptions>
-
-      
-```
-
-
-
-### Working example
-
-[Sandbox](https://github.com/kielo/grunt-maven-plugin-sandbox) project contains simple usage example. It is used to PoC/develop/test new features, so it always stays up to date with SNAPSHOT version.
-
-
-## How it works?
-
-1. JavaScript project sources from
-
-        sourceDirectory/jsSourceDirectory (default: src/main/webapp/static)
-
-    are copied to
-
-        gruntBuildDirectory (default: target-grunt)
-
-    Copied directory has to contain **package.json** and **Gruntfile.js** files
-
-1. `npm install` is called, fetching all dependencies
-
-1. `grunt` is run to complete the build process
-
-Because the plugin creates its own target dir, it should be added to ignored resources in SCM configuration (like .gitignore).
-
-## grunt-maven-plugin options
-
-Plugin options available in `<configuration>...</configuration>` are:
-
-#### misc
-
-* **showColors** : should Grunt and npm use color output; defaults to *false*
-* **filteredResources** : list of files (or expressions) that will be filtered using **maven-resources-plugin** when creating resources,
-remember to exclude those files from integrated workflow config, as else Grunt will override filtered values
-* **excludedResources** : list of files (or expressions) that will be excluded when creating resources,
-remember to exclude those files from integrated workflow config, as else Grunt will override filtered values
-* **disabled** : skip execution of plugin; defaults to *false*
-
-#### environment
-
-* **gruntBuildDirectory** : path to Grunt build directory (target for Grunt); defaults to *${basedir}/target-grunt*
-* **sourceDirectory** : path to directory containing source JavaScript project directory; defaults to *${basedir}/src/main/webapp*
-* **jsSourceDirectory** : name of directory relative to *sourceDirectory*, which contents are going to be copied to *gruntBuildDirectory*; defaults to *static*
-* **warTargetDirectory**: name of directory relative to WAR root, where artifacts from **grunt** build will be copied; defaults to *jsSourceDirectory*, use */* for root of WAR
-
-#### node
-
-* **nodeExecutable** : name of globally available **node** executable; defaults to *node*
-
-#### npm
-
-* **npmExecutable** : name of globally available **npm** executable; defaults to *npm*
-* **npmEnvironmentVar** : map of environmental variables passed down to npm install command; might be useful for npm repo customization
-* **npmOptions** : list of custom options passed to **npm** when calling `npm install` (defaults to empty)
-
-#### offline
-
-* **npmOfflineModulesFile** : name of tar-ed **node_modules** file; defaults to *node_modules.tar*
-* **npmOfflineModulesFilePath** : path to **node_modules** file, relative to project basedir; defaults to *sourceDirectory/jsSourceDirectory*
-* **npmRebuildOptions** : list of custom options passed to **npm** when calling `npm rebuild` (defaults to empty)
-
-#### bower
-
-* **bowerExecutable** : name of globally available **bower** executable; defaults to *bower*
-
-#### grunt
-
-* **target** : name of Grunt target to run (defaults to null, default Grunt target is run)
-* **gruntOptions** : list of custom options passed to grunt (defaults to empty)
-* **ignoreTasksErrors** : ignore failing Grunt tasks errors and finish Maven build with success (ignoring 3 and 6 exit code, more on [Grunt exit codes](http://gruntjs.com/api/exit-codes))
-* **ignoreAllErrors** : ignore all Grunt errors and finish Maven build with success (ignoring all exit codes, more on [Grunt exit codes](http://gruntjs.com/api/exit-codes))
-* **gruntExecutable** : name of **grunt** executable; defaults to *grunt*
-* **runGruntWithNode** : if Grunt executable is a js script, it needs to be run using node, ex: `node path/to/grunt`; defaults to *false*
-
-## Execution goals
-
-* **create-resources** : copies all files and *filteredResources* from *sourceDirectory/jsSourceDirectory* to *gruntBuildDirectory*
-* **npm** : executes `npm install` in target directory
-* **npm-offline** : reuses packed node modules instead of fetching them from npm
-* **bower** : executes `bower install` in target directory
-* **grunt** : executes Grunt in target directory
-* **clean** : deletes *gruntBuildDirectory*
-
-## Maven+Grunt Integrated workflow
-
-Using grunt-maven-plugin is convenient, but there is still a huge gap between frontend and backend development workflow. Various IDEs (Netbeans, IntelliJ Idea, Eclipse)
-try to ease webapp development by synchronizing changes made in *src/webapp/* to exploded WAR directory in *target/*. This naive approach works as long as there is no
-need to minify JavaScript sources, compile less files or project does not follow "single WAR" rule and can afford using Maven profiles. Rebuilding project each time a
-change was made in \*.js is a horrible thing. Fortunately grunt-maven-plugin is a great tool to solve this problem.
-
-Idea is to ignore IDE mechanisms and run Grunt build each time a change in static files was made. Traditional workflow looks like:
-
-1. user changes *src/webapp/static/hello.js*
-1. IDE detects change
-1. IDE copies *hello.js* to *target/_war_name_/static/hello.js*
-
-This gives little room to integrate other processes in between. Workflow utilizing **grunt-maven-plugin**:
-
-1. run [Grunt watch process](https://github.com/gruntjs/grunt-contrib-watch)
-1. user changes *src/webapp/static/hello.js*
-1. Grunt detects changes, copies *hello.js* to *target-grunt/hello.js*
-1. run Grunt tasks, produce *target-grunt/dist/hello.min.js* with source map *target-grunt/dist/hello.map.js*
-1. Grunt copies results to *target/warname/static*
-
-Now what happens inside *target-grunt* is for us to decide, it can be virtually anything - minification, less compilation, running
-JS tests, JS linting. Anything Grunt can do, just like during *heavy* build process.
-
-### Configuring Maven
-
-Since we want grunt-maven-plugin to take control of what ends up in WAR, we need to tell Maven WAR plugin to ignore our statics dir when creating WAR:
-
-```xml
-<build>
-    <plugins>
-	<plugin>
-	    <artifactId>maven-war-plugin</artifactId>
-	    <version>2.3</version>
-	    <configuration>
-		<warSourceExcludes>jsSourceDirectory/**</warSourceExcludes>
-	    </configuration>
-	</plugin>
-    </plugins>
-</build>
-```
-
-### Configuring Grunt
-
-**grunt-maven-plugin** has a dedicated NPM Grunt multitasks that make integrated workflow work.
-
+ 
 ```js
-grunt.initConfig({
-  mavenPrepare: {
-    options: {
-      resources: ['**']
-    },
-    prepare: {}
-  },
-
-  mavenDist: {
-    options: {
-      warName: '<%= gruntMavenProperties.warName %>',
-      deliverables: ['**', '!non-deliverable.js'],
-      gruntDistDir: 'dist'
-    },
-    dist: {}
-  },
-
-  gruntMavenProperties: grunt.file.readJSON('grunt-maven.json'),
-
-  watch: {
-    maven: {
-      files: ['<%= gruntMavenProperties.filesToWatch %>'],
-      tasks: 'default'
-    }
-  }
-});
-
-
-grunt.loadNpmTasks('grunt-maven');
-
-grunt.registerTask('default', ['mavenPrepare', 'jshint', 'karma', 'less', 'uglify', 'mavenDist']);
+grunt.registerTask('default', ['clean:build', 'copy:staticFiles', 'min-build']);
+grunt.registerTask('build', ['default']);
+grunt.registerTask('mvn-build', ['build', 'clean:mvn', 'copy:mvn']);
 
 ```
 
-For more information please consult documentation of [grunt-maven-npm project](https://github.com/allegro/grunt-maven-npm).
+> The Grunt task is minimal as our primary concern is to integrate it into maven.
+
+### __Step 4:__ Install `grunt-cli` locally
+
+Since maven plugin runs the command in local _node_ environment `grunt-cli` must be a part of the node project so that it can recognize `grunt` command.
+
+Use `npm install grunt-cli --save-dev` to save it as a project dependency.
+
+### __Step 5:__ Modify `pom.xml` to include the Grunt automation
+
+This step is really simple. We just need to create a maven `<profile>` in the _pom.xml_ and mention the task which we want to execute.
+Refer _pom.xml_ of the project or see the [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin) documentation. 
+
+Here is an equivalent setup to invoke `grunt mvn-build` command from maven.
+
+```xml
+<execution>
+    <id>grunt build</id><!-- just a name -->
+    <goals>
+        <goal>grunt</goal><!-- command -->
+    </goals>
+    <configuration>
+        <arguments>mvn-build</arguments> <!-- command argument-->
+    </configuration>
+</execution>
+
+```
+
+> Since Grunt itself depends on node and npm we must setup maven to install that prior to invoking this command.
+
+>`frontend-maven-plugin` plugin does not support already installed Node or npm versions. This is partly because the build should not be affected if run in different machines.
+
+Plugin create a folder `node` inside `client` directory to setup the local node and npm.
+
+You can manually copy _node.exe_ in the `node` directory and maven will take it up from there instead of downloading it from server.
+
+### __Step 5:__ Build Project using maven
+
+For this project I have created a _profile_ `fullBuild` in _pom.xml_ to run the Grunt Task, copy the minified code into `webapp` and generate the [WAR](https://en.wikipedia.org/wiki/WAR_(file_format)) to deploy it over server.
+
+Run the command `mvn clean install -P fullBuild`
 
 
-### Deep customization of workflow
+## Maven Troubleshoot
 
-It is possible to override inner workflow configuration during runtime. Inner properties are extracted from **pom.xml**
-and used internally inside workflow Grunt tasks. They reside in **target-grunt/grunt-maven.json**.
-After reading inner properties JSON file, workflow task seeks for **grunt-maven-custom.json** file in
-**target-grunt** and overrides original properties with custom ones.
+__1) mvn command not working__
 
-### Configuring IDE
+- Ensure that Maven `bin`  and `jdk` directory added to system/user environment _path_ variable
+- Create `JAVA_HOME` environment variable pointing to `jdk` directory.
 
-Depending on IDE, synchronization processes behave differently. Having JSP files synchronized is a nice feature, so it is up to you
-to decide what should be turned off. In Netbeans and IntelliJ no configuration is needed, they play nicely with new workflow.
+__2) mvn command unable to download the package due to proxy__
 
-You still have to remember to run Grunt watch process in background so it can monitor changes. It can be run from IDE via grunt-maven-plugin.
-Define custom runner that will run:
+- Ensure that the maven repository Url is accessible through Browserto rule out url blockage.
+- If you are behind corporate proxy, configure proxy as described below
 
-    mvn grunt:grunt -Dtarget=watch
-
-You should see process output each time static sources change.
-
-#### Configuring Eclipse
-
-Eclipse is a special case. Unfortunately it does not read WAR from Maven target, instead it keeps own file hierarchy.
-Eclipse developers on the team should use deep workflow customization to override properties used by others. Proposed
-way is to create **grunt-maven-custom.json** in Maven sources and add it to **.gitignore**, so it will not pollute
-source repository. Since i have little experience with Eclipse, i would welcome a contribution of sample configuration,
-but most probably it is enough to override **targetPath** property.
-
-
-## Changelog
-* **1.5.9** (26.12.2014)
-  * added option to change destination of all deliverables within WAR
-* **1.4.1** (02.08.2014)
-  * added option to exclude custom resources in create-resources phase
-* **1.4.0** (07.07.2014)
-  * changed default lifecycle bindings
-  * support for disabling execution based on flag
-* **1.3.2** (19.06.2014)
-  * support for defining npm command line parameters
-  * fixed bug from 1.3.1 - null pointer when no npm env variables specified
-* **1.3.1** (26.05.2014)
-  * support for Maven 2.1+ and 3.*
-  * option to specify NPM env variables
-* **1.3.0** (22.04.2014)
-  * **dropped** support for *link-node-modules*
-* **1.2.2** (31.03.2014)
-  * support for npm offline mode
-* **1.2.1** (25.02.2014)
-  * executing `bower install`
-* **1.2.0** (07.02.2014)
-  * new Maven+Grunt NPM multitasks
-* **1.1.4** (05.02.2014)
-  * added option to ignore Grunt task errors (failing tests etc) (#22)
-* **1.1.3** (25.01.2014)
-  * fixed issue with using custom Grunt target and CLI options together (#20)
-* **1.1.2** (06.01.2014)
-  * fixed compatibility issue of 1.1.x branch - once again compatible with JDK 6+
-* **1.1.1** (31.12.2013)
-  * fixed bug with filtering all resources instead of only chosen
-  * fixed bug with Windows paths in workflow properties
-* **1.1.0** (30.12.2013)
-  * integrated workflow as a separate, auto-configured Grunt task
-* **1.0.4** (8.12.2013)
-  * explicit declaration of resources filtered on create-resources goal
-* **1.0.3** (24.11.2013)
-  * passing custom options to grunt executable
-  * ability to use external or preinstalled node_modules
-* **1.0.2** (15.10.2013)
-  * option to disable npm and grunt color output, by default no colors are shown as it looks bad in Maven logs
-* **1.0.1** (13.09.2013)
-  * compatibility with Maven 3.1.x
-
-
-## License
-
-**grunt-maven-plugin** is published under [Apache License
+    Maven download the package in a special folder `.m2` in the user home directory (typically `C:\Users\[Your_User_Id]\.m2` folder).
+    Create/Edit the file `settings.xml` inside it to add proxy and repositories detail.
+    
+    Refer the sample [Gist](https://gist.github.com/amiteshhh/629e9a3a49e035a6d0709172eb435145) and [Maven proxy configuration](https://maven.apache.org/guides/mini/guide-proxies.html) documentation for `settings.xml` details.
