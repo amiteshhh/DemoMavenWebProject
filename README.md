@@ -113,8 +113,8 @@ __1) mvn command not working__
 
 __2) mvn command unable to download the package due to proxy__
 
-- Ensure that the maven repository Url is accessible through Browserto rule out url blockage.
-- If you are behind corporate proxy, configure proxy as described below
+- Ensure that maven repository is accessible through Browser to rule out url blockage.
+- If you are behind proxy, configure proxy as described below
 
     Maven download the package in a special folder `.m2` in the user home directory (typically `C:\Users\[Your_User_Id]\.m2` folder).
     Create/Edit the file `settings.xml` inside it to add proxy and repositories detail.
