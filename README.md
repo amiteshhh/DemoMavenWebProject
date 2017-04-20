@@ -2,7 +2,7 @@
 
 This project demonstrate how you can integrate the [node](https://nodejs.org/) based build system into [maven](https://maven.apache.org/) using maven plugin [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin).
 
-## Use Case
+## Overview
 
 Front end developer prefers the _node_ based ecosystem which comes with many handy tools like [npm](https://www.npmjs.com/), [Grunt](http://gruntjs.com/), [Gulp](http://gulpjs.com/) and many more to manage application development, code validation, test automation, optimization, deployment etc.
 
